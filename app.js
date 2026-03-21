@@ -62,11 +62,11 @@ function showPhoto(item, index) {
   lightbox.classList.remove('hidden');
   setBodyScrollLock(true);
 
-  if (lightboxTitle) lightboxTitle.textContent = item.title || '照片作品';
+  if (lightboxTitle) lightboxTitle.textContent = '';
   if (lightboxInfo) {
-    lightboxInfo.textContent = `${item.width}×${item.height} · ${item.sizeMB} MB · 照片`;
+    lightboxInfo.textContent = '';
   }
-  lightboxMeta.style.display = 'block';
+  lightboxMeta.style.display = 'none';
 
   lightboxVideo.pause();
   lightboxVideo.removeAttribute('src');
