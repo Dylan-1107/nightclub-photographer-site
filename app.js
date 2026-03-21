@@ -103,7 +103,7 @@ function showVideo(item) {
   lightboxVideo.style.display = 'block';
   lightboxVideo.classList.remove('hidden');
   lightboxVideo.setAttribute('controls', 'controls');
-  lightboxVideo.src = item.file;
+  lightboxVideo.src = item.remoteUrl || item.file;
   lightboxVideo.poster = item.poster;
   lightboxVideo.play().catch(() => {});
 }
@@ -266,17 +266,36 @@ async function loadPortfolio() {
   if (!videoGrid || !photoGrid) return;
 
   try {
-    const res = await fetch('portfolio.json');
+    const [res, mapRes] = await Promise.all([
+      fetch('portfolio.json'),
+      fetch('video-host.json').catch(() => null)
+    ]);
+
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const items = await res.json();
+
+    let hostMap = {};
+    if (mapRes && mapRes.ok) {
+      try { hostMap = await mapRes.json(); } catch { hostMap = {}; }
+    }
+
     if (!Array.isArray(items) || !items.length) {
       showEmptyState(videoGrid, '暂无视频作品');
       showEmptyState(photoGrid, '暂无照片作品');
       return;
     }
 
-    const videos = items.filter((i) => i.kind === 'video');
-    photos = items.filter((i) => i.kind === 'photo');
+    const normalized = items.map((i) => {
+      if (i.kind !== 'video') return i;
+      const key = i.file || '';
+      return {
+        ...i,
+        remoteUrl: hostMap[key] || hostMap[i.title] || i.remoteUrl || i.file
+      };
+    });
+
+    const videos = normalized.filter((i) => i.kind === 'video');
+    photos = normalized.filter((i) => i.kind === 'photo');
 
     if (videos.length) videos.forEach((item) => videoGrid.appendChild(createCard(item)));
     else showEmptyState(videoGrid, '暂无视频作品');
