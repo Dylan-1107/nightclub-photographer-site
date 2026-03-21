@@ -22,8 +22,15 @@ const lightboxImage = document.createElement('img');
 lightboxImage.id = 'lightboxImage';
 lightboxImage.className = 'lightbox-image hidden';
 lightboxImage.alt = '';
+
+const lightboxImageNext = document.createElement('img');
+lightboxImageNext.id = 'lightboxImageNext';
+lightboxImageNext.className = 'lightbox-image lightbox-image-next hidden';
+lightboxImageNext.alt = '';
+
 if (lightboxVideo) {
   lightboxVideo.insertAdjacentElement('afterend', lightboxImage);
+  lightboxImage.insertAdjacentElement('afterend', lightboxImageNext);
 }
 
 const prevBtn = document.createElement('button');
@@ -85,6 +92,11 @@ function showPhoto(item, index) {
   lightboxImage.src = item.file;
   lightboxImage.alt = item.title || '';
   lightboxImage.classList.remove('hidden');
+  lightboxImage.style.transform = 'translateX(0) scale(1)';
+  lightboxImage.style.opacity = '1';
+  lightboxImageNext.classList.add('hidden');
+  lightboxImageNext.style.transform = 'translateX(26%) scale(.985)';
+  lightboxImageNext.style.opacity = '0';
   updateLightboxBackdrop(item.file || item.poster);
   prevBtn.classList.remove('hidden');
   nextBtn.classList.remove('hidden');
@@ -104,6 +116,8 @@ function showVideo(item) {
 
   lightboxImage.classList.add('hidden');
   lightboxImage.removeAttribute('src');
+  lightboxImageNext.classList.add('hidden');
+  lightboxImageNext.removeAttribute('src');
   prevBtn.classList.add('hidden');
   nextBtn.classList.add('hidden');
   currentPhotoIndex = -1;
@@ -119,41 +133,43 @@ function showVideo(item) {
   lightboxVideo.play().catch(() => {});
 }
 
+function syncActivePhotoFromNext(nextItem, nextIndex) {
+  lightboxImage.src = nextItem.file;
+  lightboxImage.alt = nextItem.title || '';
+  updateLightboxBackdrop(nextItem.file || nextItem.poster);
+  currentPhotoIndex = nextIndex;
+}
+
 function animatePhotoSwap(step) {
-  if (!lightboxImage || currentPhotoIndex < 0 || isSwipingPhoto) return;
+  if (!lightboxImage || !lightboxImageNext || currentPhotoIndex < 0 || isSwipingPhoto) return;
   isSwipingPhoto = true;
 
-  const outX = step > 0 ? '-18%' : '18%';
-  const inX = step > 0 ? '18%' : '-18%';
   const nextIndex = (currentPhotoIndex + step + photos.length) % photos.length;
   const nextItem = photos[nextIndex];
+  const dir = step > 0 ? -1 : 1;
 
-  lightboxImage.style.transition = 'transform 220ms ease, opacity 220ms ease';
-  lightboxImage.style.transform = `translateX(${outX}) scale(.985)`;
-  lightboxImage.style.opacity = '0.18';
+  lightboxImageNext.src = nextItem.file;
+  lightboxImageNext.alt = nextItem.title || '';
+  lightboxImageNext.classList.remove('hidden');
+  lightboxImageNext.style.transition = 'transform 260ms ease, opacity 260ms ease';
+  lightboxImage.style.transition = 'transform 260ms ease, opacity 260ms ease';
+
+  lightboxImage.style.transform = `translateX(${dir * -100}%) scale(.985)`;
+  lightboxImage.style.opacity = '0.22';
+  lightboxImageNext.style.transform = 'translateX(0) scale(1)';
+  lightboxImageNext.style.opacity = '1';
 
   window.setTimeout(() => {
-    lightboxImage.src = nextItem.file;
-    lightboxImage.alt = nextItem.title || '';
-    updateLightboxBackdrop(nextItem.file || nextItem.poster);
-    currentPhotoIndex = nextIndex;
+    syncActivePhotoFromNext(nextItem, nextIndex);
     lightboxImage.style.transition = 'none';
-    lightboxImage.style.transform = `translateX(${inX}) scale(.985)`;
-    lightboxImage.style.opacity = '0.18';
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        lightboxImage.style.transition = 'transform 260ms ease, opacity 260ms ease';
-        lightboxImage.style.transform = 'translateX(0) scale(1)';
-        lightboxImage.style.opacity = '1';
-      });
-    });
-
-    window.setTimeout(() => {
-      lightboxImage.style.transition = '';
-      isSwipingPhoto = false;
-    }, 280);
-  }, 220);
+    lightboxImage.style.transform = 'translateX(0) scale(1)';
+    lightboxImage.style.opacity = '1';
+    lightboxImageNext.classList.add('hidden');
+    lightboxImageNext.style.transition = 'none';
+    lightboxImageNext.style.transform = `translateX(${dir * 26}%) scale(.985)`;
+    lightboxImageNext.style.opacity = '0';
+    isSwipingPhoto = false;
+  }, 270);
 }
 
 function showAdjacentPhoto(step) {
@@ -296,26 +312,46 @@ function initLightboxEvents() {
     if (currentPhotoIndex < 0 || isSwipingPhoto) return;
     touchStartX = e.changedTouches[0].clientX;
     lightboxImage.style.transition = 'none';
+    lightboxImageNext.style.transition = 'none';
   }, { passive: true });
 
   lightboxImage.addEventListener('touchmove', (e) => {
     if (currentPhotoIndex < 0 || isSwipingPhoto) return;
     const currentX = e.changedTouches[0].clientX;
     const deltaX = currentX - touchStartX;
-    const limited = Math.max(-90, Math.min(90, deltaX));
+    const limited = Math.max(-140, Math.min(140, deltaX));
+    const direction = limited < 0 ? 1 : -1;
+    const previewIndex = (currentPhotoIndex + direction + photos.length) % photos.length;
+    const previewItem = photos[previewIndex];
+
+    lightboxImageNext.src = previewItem.file;
+    lightboxImageNext.alt = previewItem.title || '';
+    lightboxImageNext.classList.remove('hidden');
+
     lightboxImage.style.transform = `translateX(${limited}px) scale(.992)`;
-    lightboxImage.style.opacity = `${Math.max(0.72, 1 - Math.abs(limited) / 180)}`;
+    lightboxImage.style.opacity = `${Math.max(0.7, 1 - Math.abs(limited) / 220)}`;
+
+    const nextOffset = direction > 0 ? limited + window.innerWidth * 0.82 : limited - window.innerWidth * 0.82;
+    lightboxImageNext.style.transform = `translateX(${nextOffset}px) scale(.992)`;
+    lightboxImageNext.style.opacity = `${Math.min(1, Math.max(0.22, Math.abs(limited) / 120))}`;
   }, { passive: true });
 
   lightboxImage.addEventListener('touchend', (e) => {
     if (currentPhotoIndex < 0 || isSwipingPhoto) return;
     touchEndX = e.changedTouches[0].clientX;
     const deltaX = touchEndX - touchStartX;
-    if (Math.abs(deltaX) < 45) {
-      lightboxImage.style.transition = 'transform 180ms ease, opacity 180ms ease';
+    if (Math.abs(deltaX) < 55) {
+      lightboxImage.style.transition = 'transform 220ms ease, opacity 220ms ease';
+      lightboxImageNext.style.transition = 'transform 220ms ease, opacity 220ms ease';
       lightboxImage.style.transform = 'translateX(0) scale(1)';
       lightboxImage.style.opacity = '1';
-      window.setTimeout(() => { lightboxImage.style.transition = ''; }, 180);
+      lightboxImageNext.style.opacity = '0';
+      lightboxImageNext.style.transform = `translateX(${deltaX < 0 ? '26%' : '-26%'}) scale(.985)`;
+      window.setTimeout(() => {
+        lightboxImage.style.transition = '';
+        lightboxImageNext.style.transition = '';
+        lightboxImageNext.classList.add('hidden');
+      }, 220);
       return;
     }
     if (deltaX < 0) showAdjacentPhoto(1);
