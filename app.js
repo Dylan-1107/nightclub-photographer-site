@@ -417,6 +417,8 @@ function initLightboxEvents() {
   lightboxImage.addEventListener('touchend', handleSwipeEnd, { passive: true });
   lightboxVideo.addEventListener('touchstart', handleSwipeStart, { passive: true });
   lightboxVideo.addEventListener('touchend', handleSwipeEnd, { passive: true });
+  lightboxInner.addEventListener('touchstart', handleSwipeStart, { passive: true });
+  lightboxInner.addEventListener('touchend', handleSwipeEnd, { passive: true });
 
   if (closeLightbox) closeLightbox.addEventListener('click', closeViewer);
 
@@ -469,7 +471,7 @@ async function loadPortfolio() {
     videos = normalized.filter((i) => i.kind === 'video');
     photos = normalized.filter((i) => i.kind === 'photo');
 
-    if (videos.length) videos.forEach((item) => videoGrid.appendChild(createCard(item)));
+    if (videos.length) videos.forEach((item, index) => videoGrid.appendChild(createCard(item, index)));
     else showEmptyState(videoGrid, '暂无视频作品');
 
     if (photos.length) photos.forEach((item, index) => photoGrid.appendChild(createCard(item, index)));
