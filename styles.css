@@ -234,12 +234,32 @@ img, video { -webkit-user-drag: none; }
   border-radius: 999px; padding: 10px 14px; color: var(--muted);
 }
 .lightbox {
-  position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.86); backdrop-filter: blur(10px);
+  position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.72); backdrop-filter: blur(10px);
   display: flex; align-items: center; justify-content: center; padding: 8px;
 }
 .hidden { display: none; }
+.lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  filter: blur(40px) saturate(1.15);
+  transform: scale(1.12);
+  opacity: .42;
+  pointer-events: none;
+}
+.lightbox::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,.05), rgba(0,0,0,.22) 45%, rgba(0,0,0,.55) 100%);
+  pointer-events: none;
+}
 .lightbox-inner {
-  width: min(96vw, 1320px); background: #08080d; border: 1px solid rgba(255,255,255,.08); border-radius: 14px; overflow: hidden;
+  position: relative;
+  z-index: 1;
+  width: min(96vw, 1320px); background: rgba(8,8,13,.72); border: 1px solid rgba(255,255,255,.08); border-radius: 14px; overflow: hidden;
 }
 .lightbox video { width: 100%; max-height: 88vh; background: #000; display: block; }
 .lightbox-image {
@@ -348,6 +368,7 @@ img, video { -webkit-user-drag: none; }
   .contact-pills span { padding: 6px 9px; font-size: 12px; }
 
   .portfolio-masonry { column-count: 3; column-gap: 6px; }
+  .video-masonry { column-count: 2; }
   .card { margin-bottom: 6px; border-radius: 10px; }
   .card.photo {
     background: rgba(255,255,255,.03);
@@ -392,6 +413,7 @@ img, video { -webkit-user-drag: none; }
     border-width: 1px;
     border-color: rgba(255,255,255,.08);
     overflow: hidden;
+    background: rgba(8,8,13,.62);
   }
   .lightbox-image,
   .lightbox video { max-height: 84vh; }

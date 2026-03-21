@@ -8,6 +8,7 @@ const lightboxTitle = qs('#lightboxTitle');
 const lightboxInfo = qs('#lightboxInfo');
 const lightboxMeta = lightbox ? qs('.lightbox-meta', lightbox) : null;
 const lightboxInner = lightbox ? qs('.lightbox-inner', lightbox) : null;
+const lightboxBackdrop = qs('#lightboxBackdrop');
 const closeLightbox = qs('#closeLightbox');
 const backToTop = qs('#backToTop');
 
@@ -55,6 +56,11 @@ function showEmptyState(target, message) {
   target.appendChild(box);
 }
 
+function updateLightboxBackdrop(src) {
+  if (!lightboxBackdrop) return;
+  lightboxBackdrop.style.backgroundImage = src ? `url("${src}")` : 'none';
+}
+
 function showPhoto(item, index) {
   if (!lightbox || !lightboxVideo || !lightboxMeta) return;
 
@@ -78,6 +84,7 @@ function showPhoto(item, index) {
   lightboxImage.src = item.file;
   lightboxImage.alt = item.title || '';
   lightboxImage.classList.remove('hidden');
+  updateLightboxBackdrop(item.file || item.poster);
   prevBtn.classList.remove('hidden');
   nextBtn.classList.remove('hidden');
 }
@@ -107,6 +114,7 @@ function showVideo(item) {
   lightboxVideo.disablePictureInPicture = true;
   lightboxVideo.src = item.remoteUrl || item.file;
   lightboxVideo.poster = item.poster;
+  updateLightboxBackdrop(item.poster || item.file);
   lightboxVideo.play().catch(() => {});
 }
 
@@ -138,6 +146,7 @@ function closeViewer() {
   prevBtn.classList.add('hidden');
   nextBtn.classList.add('hidden');
   currentPhotoIndex = -1;
+  updateLightboxBackdrop('');
 
   lightbox.classList.add('hidden');
   setBodyScrollLock(false);
