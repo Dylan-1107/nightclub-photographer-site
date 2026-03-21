@@ -13,10 +13,15 @@ const closeLightbox = qs('#closeLightbox');
 const backToTop = qs('#backToTop');
 
 let photos = [];
+let videos = [];
 let currentPhotoIndex = -1;
+let currentVideoIndex = -1;
 let touchStartX = 0;
+let touchStartY = 0;
 let touchEndX = 0;
+let touchEndY = 0;
 let isSwipingPhoto = false;
+let activeMediaKind = null;
 
 const lightboxImage = document.createElement('img');
 lightboxImage.id = 'lightboxImage';
@@ -72,7 +77,9 @@ function updateLightboxBackdrop(src) {
 function showPhoto(item, index) {
   if (!lightbox || !lightboxVideo || !lightboxMeta) return;
 
+  activeMediaKind = 'photo';
   currentPhotoIndex = index;
+  currentVideoIndex = -1;
   lightbox.classList.remove('hidden');
   setBodyScrollLock(true);
 
@@ -102,9 +109,12 @@ function showPhoto(item, index) {
   nextBtn.classList.remove('hidden');
 }
 
-function showVideo(item) {
+function showVideo(item, index = -1) {
   if (!lightbox || !lightboxVideo || !lightboxMeta) return;
 
+  activeMediaKind = 'video';
+  currentVideoIndex = index;
+  currentPhotoIndex = -1;
   lightbox.classList.remove('hidden');
   setBodyScrollLock(true);
 
@@ -118,9 +128,8 @@ function showVideo(item) {
   lightboxImage.removeAttribute('src');
   lightboxImageNext.classList.add('hidden');
   lightboxImageNext.removeAttribute('src');
-  prevBtn.classList.add('hidden');
-  nextBtn.classList.add('hidden');
-  currentPhotoIndex = -1;
+  prevBtn.classList.remove('hidden');
+  nextBtn.classList.remove('hidden');
 
   lightboxVideo.style.display = 'block';
   lightboxVideo.classList.remove('hidden');
@@ -177,6 +186,18 @@ function showAdjacentPhoto(step) {
   animatePhotoSwap(step);
 }
 
+function showAdjacentVideo(step) {
+  if (!videos.length || currentVideoIndex < 0) return;
+  const nextIndex = (currentVideoIndex + step + videos.length) % videos.length;
+  const nextItem = videos[nextIndex];
+  showVideo(nextItem, nextIndex);
+}
+
+function showAdjacentMedia(step) {
+  if (activeMediaKind === 'photo') showAdjacentPhoto(step);
+  if (activeMediaKind === 'video') showAdjacentVideo(step);
+}
+
 function closeViewer() {
   if (!lightbox || !lightboxVideo || !lightboxMeta) return;
 
@@ -199,6 +220,8 @@ function closeViewer() {
   prevBtn.classList.add('hidden');
   nextBtn.classList.add('hidden');
   currentPhotoIndex = -1;
+  currentVideoIndex = -1;
+  activeMediaKind = null;
   updateLightboxBackdrop('');
 
   lightbox.classList.add('hidden');
@@ -240,7 +263,7 @@ function createCard(item, index = -1) {
   const media = qs('.card-media', card);
   const open = () => {
     if (item.kind === 'photo') showPhoto(item, index);
-    else showVideo(item);
+    else showVideo(item, index);
   };
 
   if (media) {
@@ -298,27 +321,28 @@ window.addEventListener('scroll', () => {
 function initLightboxEvents() {
   if (!lightbox) return;
 
-  prevBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    showAdjacentPhoto(-1);
-  });
-
-  nextBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    showAdjacentPhoto(1);
-  });
-
-  lightboxImage.addEventListener('touchstart', (e) => {
-    if (currentPhotoIndex < 0 || isSwipingPhoto) return;
+  const handleSwipeStart = (e) => {
+    if (lightbox.classList.contains('hidden')) return;
+    if (activeMediaKind === 'photo' && isSwipingPhoto) return;
     touchStartX = e.changedTouches[0].clientX;
-    lightboxImage.style.transition = 'none';
-    lightboxImageNext.style.transition = 'none';
-  }, { passive: true });
+    touchStartY = e.changedTouches[0].clientY;
+    touchEndX = touchStartX;
+    touchEndY = touchStartY;
+    if (activeMediaKind === 'photo') {
+      lightboxImage.style.transition = 'none';
+      lightboxImageNext.style.transition = 'none';
+    }
+  };
 
-  lightboxImage.addEventListener('touchmove', (e) => {
+  const handlePhotoSwipeMove = (e) => {
     if (currentPhotoIndex < 0 || isSwipingPhoto) return;
     const currentX = e.changedTouches[0].clientX;
+    touchEndX = currentX;
+    touchEndY = e.changedTouches[0].clientY;
     const deltaX = currentX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+    if (Math.abs(deltaY) > Math.abs(deltaX)) return;
+
     const limited = Math.max(-140, Math.min(140, deltaX));
     const direction = limited < 0 ? 1 : -1;
     const previewIndex = (currentPhotoIndex + direction + photos.length) % photos.length;
@@ -334,29 +358,65 @@ function initLightboxEvents() {
     const nextOffset = direction > 0 ? limited + window.innerWidth * 0.82 : limited - window.innerWidth * 0.82;
     lightboxImageNext.style.transform = `translateX(${nextOffset}px) scale(.992)`;
     lightboxImageNext.style.opacity = `${Math.min(1, Math.max(0.22, Math.abs(limited) / 120))}`;
-  }, { passive: true });
+  };
 
-  lightboxImage.addEventListener('touchend', (e) => {
-    if (currentPhotoIndex < 0 || isSwipingPhoto) return;
+  const resetPhotoSwipePreview = (deltaX = 0) => {
+    lightboxImage.style.transition = 'transform 220ms ease, opacity 220ms ease';
+    lightboxImageNext.style.transition = 'transform 220ms ease, opacity 220ms ease';
+    lightboxImage.style.transform = 'translateX(0) scale(1)';
+    lightboxImage.style.opacity = '1';
+    lightboxImageNext.style.opacity = '0';
+    lightboxImageNext.style.transform = `translateX(${deltaX < 0 ? '26%' : '-26%'}) scale(.985)`;
+    window.setTimeout(() => {
+      lightboxImage.style.transition = '';
+      lightboxImageNext.style.transition = '';
+      lightboxImageNext.classList.add('hidden');
+    }, 220);
+  };
+
+  const handleSwipeEnd = (e) => {
+    if (lightbox.classList.contains('hidden')) return;
     touchEndX = e.changedTouches[0].clientX;
+    touchEndY = e.changedTouches[0].clientY;
+
     const deltaX = touchEndX - touchStartX;
-    if (Math.abs(deltaX) < 55) {
-      lightboxImage.style.transition = 'transform 220ms ease, opacity 220ms ease';
-      lightboxImageNext.style.transition = 'transform 220ms ease, opacity 220ms ease';
-      lightboxImage.style.transform = 'translateX(0) scale(1)';
-      lightboxImage.style.opacity = '1';
-      lightboxImageNext.style.opacity = '0';
-      lightboxImageNext.style.transform = `translateX(${deltaX < 0 ? '26%' : '-26%'}) scale(.985)`;
-      window.setTimeout(() => {
-        lightboxImage.style.transition = '';
-        lightboxImageNext.style.transition = '';
-        lightboxImageNext.classList.add('hidden');
-      }, 220);
+    const deltaY = touchEndY - touchStartY;
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+
+    if (activeMediaKind === 'photo' && currentPhotoIndex >= 0 && absX < 55 && absY < 55) {
+      resetPhotoSwipePreview(deltaX);
       return;
     }
-    if (deltaX < 0) showAdjacentPhoto(1);
-    else showAdjacentPhoto(-1);
-  }, { passive: true });
+
+    if (absX < 55 && absY < 55) return;
+
+    if (absX >= absY) {
+      if (deltaX < 0) showAdjacentMedia(1);
+      else showAdjacentMedia(-1);
+      return;
+    }
+
+    if (activeMediaKind === 'photo' && currentPhotoIndex >= 0) resetPhotoSwipePreview(deltaX);
+    if (deltaY < 0) showAdjacentMedia(1);
+    else showAdjacentMedia(-1);
+  };
+
+  prevBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showAdjacentMedia(-1);
+  });
+
+  nextBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showAdjacentMedia(1);
+  });
+
+  lightboxImage.addEventListener('touchstart', handleSwipeStart, { passive: true });
+  lightboxImage.addEventListener('touchmove', handlePhotoSwipeMove, { passive: true });
+  lightboxImage.addEventListener('touchend', handleSwipeEnd, { passive: true });
+  lightboxVideo.addEventListener('touchstart', handleSwipeStart, { passive: true });
+  lightboxVideo.addEventListener('touchend', handleSwipeEnd, { passive: true });
 
   if (closeLightbox) closeLightbox.addEventListener('click', closeViewer);
 
@@ -367,8 +427,10 @@ function initLightboxEvents() {
   document.addEventListener('keydown', (e) => {
     if (lightbox.classList.contains('hidden')) return;
     if (e.key === 'Escape') closeViewer();
-    if (e.key === 'ArrowLeft' && currentPhotoIndex >= 0) showAdjacentPhoto(-1);
-    if (e.key === 'ArrowRight' && currentPhotoIndex >= 0) showAdjacentPhoto(1);
+    if (e.key === 'ArrowLeft') showAdjacentMedia(-1);
+    if (e.key === 'ArrowRight') showAdjacentMedia(1);
+    if (e.key === 'ArrowUp') showAdjacentMedia(1);
+    if (e.key === 'ArrowDown') showAdjacentMedia(-1);
   });
 }
 
@@ -404,7 +466,7 @@ async function loadPortfolio() {
       };
     });
 
-    const videos = normalized.filter((i) => i.kind === 'video');
+    videos = normalized.filter((i) => i.kind === 'video');
     photos = normalized.filter((i) => i.kind === 'photo');
 
     if (videos.length) videos.forEach((item) => videoGrid.appendChild(createCard(item)));
