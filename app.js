@@ -402,15 +402,22 @@ function initLightboxEvents() {
     else showAdjacentMedia(-1);
   };
 
-  prevBtn.addEventListener('click', (e) => {
+  const goPrev = (e) => {
+    e.preventDefault();
     e.stopPropagation();
     showAdjacentMedia(-1);
-  });
+  };
 
-  nextBtn.addEventListener('click', (e) => {
+  const goNext = (e) => {
+    e.preventDefault();
     e.stopPropagation();
     showAdjacentMedia(1);
-  });
+  };
+
+  prevBtn.addEventListener('click', goPrev);
+  nextBtn.addEventListener('click', goNext);
+  prevBtn.addEventListener('touchend', goPrev, { passive: false });
+  nextBtn.addEventListener('touchend', goNext, { passive: false });
 
   lightboxImage.addEventListener('touchstart', handleSwipeStart, { passive: true });
   lightboxImage.addEventListener('touchmove', handlePhotoSwipeMove, { passive: true });
