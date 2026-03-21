@@ -103,6 +103,8 @@ function showVideo(item) {
   lightboxVideo.style.display = 'block';
   lightboxVideo.classList.remove('hidden');
   lightboxVideo.setAttribute('controls', 'controls');
+  lightboxVideo.setAttribute('controlsList', 'nodownload noplaybackrate');
+  lightboxVideo.disablePictureInPicture = true;
   lightboxVideo.src = item.remoteUrl || item.file;
   lightboxVideo.poster = item.poster;
   lightboxVideo.play().catch(() => {});
@@ -308,6 +310,11 @@ async function loadPortfolio() {
     showEmptyState(photoGrid, '作品加载失败，请稍后刷新重试');
   }
 }
+
+document.addEventListener('contextmenu', (e) => {
+  const media = e.target.closest('video, img');
+  if (media) e.preventDefault();
+});
 
 initAnchors();
 initBackToTop();
