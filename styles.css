@@ -13,6 +13,9 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
   margin: 0;
   font-family: Inter, system-ui, sans-serif;
   background:
@@ -24,6 +27,7 @@ body {
 a { color: inherit; text-decoration: none; }
 .container { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
 section { scroll-margin-top: 92px; }
+img, video { -webkit-user-drag: none; }
 .bg-grid {
   position: fixed; inset: 0; pointer-events: none; opacity: .08;
   background-image: linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
@@ -114,8 +118,8 @@ section { scroll-margin-top: 92px; }
 .category-card { padding: 24px; display:block; }
 .category-card.active { border-color: rgba(212,175,55,.45); }
 .category-card.muted { opacity: .92; }
-.link-card { transition: transform .35s ease, border-color .28s ease, background .28s ease, box-shadow .35s ease; }
-.link-card:hover { transform: translateY(-6px) scale(1.01); border-color: rgba(212,175,55,.55); box-shadow: 0 28px 80px rgba(0,0,0,.48); }
+.link-card { transition: transform .24s ease, border-color .22s ease, background .22s ease, box-shadow .24s ease; will-change: transform; }
+.link-card:hover { transform: translateY(-4px) scale(1.008); border-color: rgba(212,175,55,.55); box-shadow: 0 20px 56px rgba(0,0,0,.42); }
 .featured-card {
   position: relative;
   min-height: 280px;
@@ -176,8 +180,8 @@ section { scroll-margin-top: 92px; }
 .card-media { position: relative; aspect-ratio: 16 / 10; overflow: hidden; cursor: pointer; }
 .card.vertical .card-media { aspect-ratio: 9 / 16; }
 .card.photo .card-media { border-radius: 14px; }
-.card-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .55s ease, opacity .35s ease, filter .35s ease; }
-.card:hover .card-media img { transform: scale(1.05); opacity: .97; filter: saturate(1.05); }
+.card-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .42s ease, opacity .25s ease, filter .25s ease; will-change: transform; transform: translateZ(0); }
+.card:hover .card-media img { transform: scale(1.035); opacity: .98; filter: saturate(1.04); }
 .play-badge {
   position: absolute; left: 16px; bottom: 16px; background: rgba(0,0,0,.58);
   border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px);
@@ -244,6 +248,7 @@ section { scroll-margin-top: 92px; }
   object-fit: contain;
   background: #000;
   display: block;
+  touch-action: pan-y;
 }
 .lightbox-meta { padding: 0; min-height: 0; }
 .lightbox-meta h3 { margin: 0 0 8px; }

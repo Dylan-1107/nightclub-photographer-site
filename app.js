@@ -147,6 +147,8 @@ function createCard(item, index = -1) {
   const card = document.createElement('article');
   card.className = `card ${item.kind} ${item.orientation}`;
 
+  const poster = item.poster || item.file;
+
   const typeLabel = item.kind === 'photo'
     ? (item.orientation === 'vertical' ? '竖版照片' : '横版照片')
     : (item.orientation === 'vertical' ? '竖版视频' : '横版视频');
@@ -157,7 +159,7 @@ function createCard(item, index = -1) {
 
   card.innerHTML = `
     <div class="card-media" role="button" tabindex="0">
-      <img src="${item.poster}" alt="${item.title || ''}" loading="lazy" />
+      <img src="${poster}" alt="${item.title || ''}" loading="lazy" decoding="async" />
       <span class="play-badge">${actionIcon} ${actionLabel}</span>
     </div>
     ${item.kind === 'photo' ? '' : `
@@ -180,7 +182,7 @@ function createCard(item, index = -1) {
   };
 
   if (media) {
-    media.addEventListener('click', open);
+    media.addEventListener('click', open, { passive: true });
     media.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
@@ -220,7 +222,15 @@ function initBackToTop() {
   backToTop.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
-  window.addEventListener('scroll', updateBackToTopVisibility);
+  let backToTopTicking = false;
+window.addEventListener('scroll', () => {
+  if (backToTopTicking) return;
+  backToTopTicking = true;
+  window.requestAnimationFrame(() => {
+    updateBackToTopVisibility();
+    backToTopTicking = false;
+  });
+}, { passive: true });
 }
 
 function initLightboxEvents() {
@@ -254,7 +264,7 @@ function initLightboxEvents() {
 
   lightbox.addEventListener('click', (e) => {
     if (e.target === lightbox) closeViewer();
-  });
+  }, { passive: true });
 
   document.addEventListener('keydown', (e) => {
     if (lightbox.classList.contains('hidden')) return;
