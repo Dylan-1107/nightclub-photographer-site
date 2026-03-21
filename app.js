@@ -16,6 +16,7 @@ let photos = [];
 let currentPhotoIndex = -1;
 let touchStartX = 0;
 let touchEndX = 0;
+let isSwipingPhoto = false;
 
 const lightboxImage = document.createElement('img');
 lightboxImage.id = 'lightboxImage';
@@ -118,10 +119,46 @@ function showVideo(item) {
   lightboxVideo.play().catch(() => {});
 }
 
+function animatePhotoSwap(step) {
+  if (!lightboxImage || currentPhotoIndex < 0 || isSwipingPhoto) return;
+  isSwipingPhoto = true;
+
+  const outX = step > 0 ? '-18%' : '18%';
+  const inX = step > 0 ? '18%' : '-18%';
+  const nextIndex = (currentPhotoIndex + step + photos.length) % photos.length;
+  const nextItem = photos[nextIndex];
+
+  lightboxImage.style.transition = 'transform 220ms ease, opacity 220ms ease';
+  lightboxImage.style.transform = `translateX(${outX}) scale(.985)`;
+  lightboxImage.style.opacity = '0.18';
+
+  window.setTimeout(() => {
+    lightboxImage.src = nextItem.file;
+    lightboxImage.alt = nextItem.title || '';
+    updateLightboxBackdrop(nextItem.file || nextItem.poster);
+    currentPhotoIndex = nextIndex;
+    lightboxImage.style.transition = 'none';
+    lightboxImage.style.transform = `translateX(${inX}) scale(.985)`;
+    lightboxImage.style.opacity = '0.18';
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        lightboxImage.style.transition = 'transform 260ms ease, opacity 260ms ease';
+        lightboxImage.style.transform = 'translateX(0) scale(1)';
+        lightboxImage.style.opacity = '1';
+      });
+    });
+
+    window.setTimeout(() => {
+      lightboxImage.style.transition = '';
+      isSwipingPhoto = false;
+    }, 280);
+  }, 220);
+}
+
 function showAdjacentPhoto(step) {
   if (!photos.length || currentPhotoIndex < 0) return;
-  const nextIndex = (currentPhotoIndex + step + photos.length) % photos.length;
-  showPhoto(photos[nextIndex], nextIndex);
+  animatePhotoSwap(step);
 }
 
 function closeViewer() {
@@ -256,15 +293,31 @@ function initLightboxEvents() {
   });
 
   lightboxImage.addEventListener('touchstart', (e) => {
-    if (currentPhotoIndex < 0) return;
+    if (currentPhotoIndex < 0 || isSwipingPhoto) return;
     touchStartX = e.changedTouches[0].clientX;
+    lightboxImage.style.transition = 'none';
+  }, { passive: true });
+
+  lightboxImage.addEventListener('touchmove', (e) => {
+    if (currentPhotoIndex < 0 || isSwipingPhoto) return;
+    const currentX = e.changedTouches[0].clientX;
+    const deltaX = currentX - touchStartX;
+    const limited = Math.max(-90, Math.min(90, deltaX));
+    lightboxImage.style.transform = `translateX(${limited}px) scale(.992)`;
+    lightboxImage.style.opacity = `${Math.max(0.72, 1 - Math.abs(limited) / 180)}`;
   }, { passive: true });
 
   lightboxImage.addEventListener('touchend', (e) => {
-    if (currentPhotoIndex < 0) return;
+    if (currentPhotoIndex < 0 || isSwipingPhoto) return;
     touchEndX = e.changedTouches[0].clientX;
     const deltaX = touchEndX - touchStartX;
-    if (Math.abs(deltaX) < 30) return;
+    if (Math.abs(deltaX) < 45) {
+      lightboxImage.style.transition = 'transform 180ms ease, opacity 180ms ease';
+      lightboxImage.style.transform = 'translateX(0) scale(1)';
+      lightboxImage.style.opacity = '1';
+      window.setTimeout(() => { lightboxImage.style.transition = ''; }, 180);
+      return;
+    }
     if (deltaX < 0) showAdjacentPhoto(1);
     else showAdjacentPhoto(-1);
   }, { passive: true });

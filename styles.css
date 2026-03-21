@@ -269,6 +269,8 @@ img, video { -webkit-user-drag: none; }
   background: #000;
   display: block;
   touch-action: pan-y;
+  will-change: transform, opacity;
+  transition: transform 220ms ease, opacity 220ms ease;
 }
 .lightbox-meta { padding: 0; min-height: 0; }
 .lightbox-meta h3 { margin: 0 0 8px; }
