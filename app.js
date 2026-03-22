@@ -249,7 +249,6 @@ function createCard(item, index = -1) {
     </div>
     ${item.kind === 'photo' ? '' : `
       <div class="card-body">
-        <h3 class="card-title">${item.title || ''}</h3>
         <div class="meta-row">
           <span class="pill">${item.width}×${item.height}</span>
           ${durationPill}
