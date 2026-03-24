@@ -123,9 +123,9 @@ function showVideo(item, index = -1) {
 
   if (lightboxTitle) lightboxTitle.textContent = '';
   if (lightboxInfo) {
-    lightboxInfo.textContent = `${item.width}×${item.height} · ${formatDuration(item.durationSec)} · ${item.sizeMB} MB · 视频`;
+    lightboxInfo.textContent = '';
   }
-  lightboxMeta.style.display = 'block';
+  lightboxMeta.style.display = 'none';
 
   lightboxImage.classList.add('hidden');
   lightboxImage.removeAttribute('src');
