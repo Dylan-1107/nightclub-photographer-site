@@ -37,3 +37,12 @@
 - 视频作品卡不再显示标题文字
 - 照片作品继续保持无外部标题显示
 
+[2026-03-24 23:32 Asia/Shanghai]
+- 按国内访问场景优化站点性能
+- 将 `assets/videos_compressed` 下全部视频改为 faststart 封装，提前 `moov` 元数据，减少网页首开等待
+- 新增 `vercel.json` 资源缓存策略：视频 / 缩略图 / 照片走长缓存，JSON 映射走短缓存
+- 移除 Google Fonts 外链，改为系统中文字体栈，避免国内网络下字体阻塞首屏
+- `lightboxVideo` 改为默认 metadata 预加载；弱网 / 省流量网络下不强制自动播放
+- 将 `portfolio.json` 中视频 `sizeMB` 更新为当前压缩后真实大小
+- 更新 `video-host.example.json`，改为国内 CDN（COS / OSS）映射示例
+

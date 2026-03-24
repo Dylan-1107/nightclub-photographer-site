@@ -1,4 +1,4 @@
 {
-  "assets/videos/hanji_1.mp4": "https://your-cdn-domain/videos/hanji_1.mp4",
-  "assets/videos/10.31嘉宾现场回顾-1.mp4": "https://your-cdn-domain/videos/10.31嘉宾现场回顾-1.mp4"
+    "assets/videos_compressed/v01.mp4":  "https://your-bucket-name.cos.ap-guangzhou.myqcloud.com/nightclub/videos/v01.mp4",
+    "assets/videos_compressed/v05.mp4":  "https://your-bucket-name.oss-cn-guangzhou.aliyuncs.com/nightclub/videos/v05.mp4"
 }

@@ -17,7 +17,7 @@ body {
   text-rendering: optimizeLegibility;
   overscroll-behavior-y: none;
   margin: 0;
-  font-family: Inter, system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
   background:
     radial-gradient(circle at 15% 10%, rgba(155,123,255,.18), transparent 26%),
     radial-gradient(circle at 85% 25%, rgba(212,175,55,.12), transparent 22%),

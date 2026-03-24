@@ -23,6 +23,9 @@ let touchEndY = 0;
 let isSwipingPhoto = false;
 let activeMediaKind = null;
 
+const networkInfo = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+const shouldAutoplayVideo = !(networkInfo?.saveData || /(^|-)2g|3g/.test(networkInfo?.effectiveType || ''));
+
 const lightboxImage = document.createElement('img');
 lightboxImage.id = 'lightboxImage';
 lightboxImage.className = 'lightbox-image hidden';
@@ -136,11 +139,16 @@ function showVideo(item, index = -1) {
   lightboxVideo.setAttribute('controls', 'controls');
   lightboxVideo.setAttribute('controlsList', 'nodownload noplaybackrate');
   lightboxVideo.disablePictureInPicture = true;
+  lightboxVideo.preload = shouldAutoplayVideo ? 'auto' : 'metadata';
   lightboxVideo.src = item.remoteUrl || item.file;
   lightboxVideo.poster = item.poster;
   updateLightboxBackdrop(item.poster || item.file);
-  lightboxVideo.play().catch(() => {});
+
+  if (shouldAutoplayVideo) {
+    lightboxVideo.play().catch(() => {});
+  }
 }
+
 
 function syncActivePhotoFromNext(nextItem, nextIndex) {
   lightboxImage.src = nextItem.file;

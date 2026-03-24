@@ -1,0 +1,49 @@
+{
+    "headers":  [
+                    {
+                        "source":  "/assets/videos_compressed/(.*)",
+                        "headers":  [
+                                        {
+                                            "key":  "Cache-Control",
+                                            "value":  "public, max-age=31536000, immutable"
+                                        }
+                                    ]
+                    },
+                    {
+                        "source":  "/assets/thumbs/(.*)",
+                        "headers":  [
+                                        {
+                                            "key":  "Cache-Control",
+                                            "value":  "public, max-age=31536000, immutable"
+                                        }
+                                    ]
+                    },
+                    {
+                        "source":  "/assets/photos/(.*)",
+                        "headers":  [
+                                        {
+                                            "key":  "Cache-Control",
+                                            "value":  "public, max-age=31536000, immutable"
+                                        }
+                                    ]
+                    },
+                    {
+                        "source":  "/portfolio.json",
+                        "headers":  [
+                                        {
+                                            "key":  "Cache-Control",
+                                            "value":  "public, max-age=300, s-maxage=300, stale-while-revalidate=86400"
+                                        }
+                                    ]
+                    },
+                    {
+                        "source":  "/video-host.json",
+                        "headers":  [
+                                        {
+                                            "key":  "Cache-Control",
+                                            "value":  "public, max-age=300, s-maxage=300, stale-while-revalidate=86400"
+                                        }
+                                    ]
+                    }
+                ]
+}
