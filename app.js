@@ -121,7 +121,7 @@ function showVideo(item, index = -1) {
   lightbox.classList.remove('hidden');
   setBodyScrollLock(true);
 
-  if (lightboxTitle) lightboxTitle.textContent = item.title || '视频作品';
+  if (lightboxTitle) lightboxTitle.textContent = '';
   if (lightboxInfo) {
     lightboxInfo.textContent = `${item.width}×${item.height} · ${formatDuration(item.durationSec)} · ${item.sizeMB} MB · 视频`;
   }
