@@ -276,6 +276,17 @@
     },
     {
         "kind": "video",
+        "title": "2026.3.21嘉宾现场(1)",
+        "file": "assets/videos_compressed/v14.mp4",
+        "poster": "assets/thumbs/2026.3.21嘉宾现场_1.jpg",
+        "width": 1280,
+        "height": 720,
+        "durationSec": 31,
+        "sizeMB": 13.6,
+        "orientation": "horizontal"
+    },
+    {
+        "kind": "video",
         "title": "0422那奇沃夫kkluv",
         "file": "assets/videos_compressed/v01.mp4",
         "poster": "assets/thumbs/0422那奇沃夫kkluv.jpg",
@@ -294,17 +305,6 @@
         "durationSec": 32,
         "width": 1920,
         "height": 1080,
-        "orientation": "horizontal"
-    },
-    {
-        "kind": "video",
-        "title": "2026.3.21嘉宾现场(1)",
-        "file": "assets/videos_compressed/v14.mp4",
-        "poster": "assets/thumbs/2026.3.21嘉宾现场_1.jpg",
-        "width": 1280,
-        "height": 720,
-        "durationSec": 31,
-        "sizeMB": 13.6,
         "orientation": "horizontal"
     },
     {
